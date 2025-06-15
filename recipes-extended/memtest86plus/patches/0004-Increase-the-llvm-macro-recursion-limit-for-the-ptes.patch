@@ -1,0 +1,45 @@
+From 28ae02db3fe568d5266b6782aecba2655aac166f Mon Sep 17 00:00:00 2001
+Message-ID: <28ae02db3fe568d5266b6782aecba2655aac166f.1750031643.git.calvin@wbinvd.org>
+In-Reply-To: <a5e50893a2c208d4c56cd3d4df39acfac47a8a28.1750031643.git.calvin@wbinvd.org>
+References: <a5e50893a2c208d4c56cd3d4df39acfac47a8a28.1750031643.git.calvin@wbinvd.org>
+From: Calvin Owens <calvin@wbinvd.org>
+Date: Sat, 14 Jun 2025 23:52:52 -0700
+Subject: [PATCH 4/8] Increase the llvm macro recursion limit for the ptes64
+ macro
+
+The default limit is 20, but the macro needs 64.
+
+Upstream-Status: Submitted [https://github.com/memtest86plus/memtest86plus/pull/521]
+Signed-off-by: Calvin Owens <calvin@wbinvd.org>
+---
+ build/x86_64/Makefile | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/build/x86_64/Makefile b/build/x86_64/Makefile
+index 76fe2b0..cb06f72 100644
+--- a/build/x86_64/Makefile
++++ b/build/x86_64/Makefile
+@@ -25,6 +25,11 @@ else
+   MS_LDS=ldscripts/memtest_shared.lds
+ endif
+ 
++CCVER := $(shell $(CC) --version)
++ifneq (,$(findstring clang,$(CCVER)))
++  ASMEXTRAFLAGS=-mllvm -asm-macro-max-nesting-depth=64
++endif
++
+ INC_DIRS = -I../../boot -I../../system -I../../system/imc -I../../system/x86 -I../../lib -I../../tests -I../../app -Iapp
+ 
+ SYS_OBJS = system/acpi.o \
+@@ -105,7 +110,7 @@ boot/x86/header.o : | ../../boot/sbat.csv
+ 
+ boot/x86/startup.o: ../../boot/x86/startup64.S ../../boot/boot.h
+ 	@mkdir -p boot/x86
+-	$(CC) -m64 -x assembler-with-cpp -c -I../../boot -o $@ $<
++	$(CC) -m64 -x assembler-with-cpp -c -I../../boot $(ASMEXTRAFLAGS) -o $@ $<
+ 
+ boot/%.o: ../../boot/%.S ../../boot/boot.h app/build_version.h
+ 	@mkdir -p boot
+-- 
+2.47.2
+

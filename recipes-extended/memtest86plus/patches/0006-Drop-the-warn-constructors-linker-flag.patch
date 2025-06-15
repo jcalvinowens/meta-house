@@ -1,0 +1,38 @@
+From 432ea4485bb42c5448487a9b8080104ee230838b Mon Sep 17 00:00:00 2001
+Message-ID: <432ea4485bb42c5448487a9b8080104ee230838b.1750031643.git.calvin@wbinvd.org>
+In-Reply-To: <a5e50893a2c208d4c56cd3d4df39acfac47a8a28.1750031643.git.calvin@wbinvd.org>
+References: <a5e50893a2c208d4c56cd3d4df39acfac47a8a28.1750031643.git.calvin@wbinvd.org>
+From: Calvin Owens <calvin@wbinvd.org>
+Date: Sat, 14 Jun 2025 23:52:58 -0700
+Subject: [PATCH 6/8] Drop the --warn-constructors linker flag
+
+lld barfs on this flag. I don't think this did anything in the first
+place, the GNU manpage notes:
+
+    For formats like COFF or ELF, the linker can not detect the use of global constructors.
+
+...so just drop it. But I could obviously do the little dance to keep it
+with the GNU linker if you prefer.
+
+Upstream-Status: Submitted [https://github.com/memtest86plus/memtest86plus/pull/521]
+Signed-off-by: Calvin Owens <calvin@wbinvd.org>
+---
+ build/x86_64/Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/build/x86_64/Makefile b/build/x86_64/Makefile
+index cb06f72..c1ed832 100644
+--- a/build/x86_64/Makefile
++++ b/build/x86_64/Makefile
+@@ -172,7 +172,7 @@ FORCE:
+ # then link it dynamically so I have full relocation information.
+ 
+ memtest_shared: $(OBJS) $(MS_LDS) Makefile
+-	$(LD) --warn-constructors --warn-common -static -T $(MS_LDS) -o $@ $(OBJS) && \
++	$(LD) --warn-common -static -T $(MS_LDS) -o $@ $(OBJS) && \
+ 	$(LD) -shared -Bsymbolic -T $(MS_LDS) -o $@ $(OBJS)
+ 
+ memtest_shared.bin: memtest_shared
+-- 
+2.47.2
+

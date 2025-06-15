@@ -99,7 +99,7 @@ Only 64-bit targets are supported.
 * `universal-pc-v3` (default)
 * `universal-pc-v4`
 
-### Minimalist Targets
+#### Minimalist Targets
 
 * `minimal-pc` (no storage or networking)
 
@@ -123,7 +123,7 @@ Only 64-bit targets are supported.
 
 _\* One-off machines built at home by the author, provided as examples._
 
-## Yocto Releases
+### Yocto Releases
 
 By default, images are built off the most recent active release branch,
 currently Walnascar (EOL Q4'25). You can also build Scarthgap (EOL Q2'28), or

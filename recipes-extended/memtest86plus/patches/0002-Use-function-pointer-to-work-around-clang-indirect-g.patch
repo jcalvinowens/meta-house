@@ -1,0 +1,51 @@
+From 9d6a7795e0d09ed2cc534cf9b2cc89bd56287c08 Mon Sep 17 00:00:00 2001
+Message-ID: <9d6a7795e0d09ed2cc534cf9b2cc89bd56287c08.1750031643.git.calvin@wbinvd.org>
+In-Reply-To: <a5e50893a2c208d4c56cd3d4df39acfac47a8a28.1750031643.git.calvin@wbinvd.org>
+References: <a5e50893a2c208d4c56cd3d4df39acfac47a8a28.1750031643.git.calvin@wbinvd.org>
+From: Calvin Owens <calvin@wbinvd.org>
+Date: Sat, 14 Jun 2025 23:52:45 -0700
+Subject: [PATCH 2/8] Use function pointer to work around clang indirect goto
+ error
+
+I originally tried the amusing workaround suggested here:
+
+    https://lists.llvm.org/pipermail/llvm-bugs/2014-January/032475.html
+
+...but bizarrely, while that fixed clang, it made gcc-14 create broken
+binaries! Then I found this thread, which suggests using a function
+pointer:
+
+    https://github.com/llvm/llvm-project/issues/19032
+
+...and that makes both compilers happy. Open to better ideas.
+
+Upstream-Status: Submitted [https://github.com/memtest86plus/memtest86plus/pull/521]
+Signed-off-by: Calvin Owens <calvin@wbinvd.org>
+---
+ app/main.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/app/main.c b/app/main.c
+index 7a2634f..30bb21b 100644
+--- a/app/main.c
++++ b/app/main.c
+@@ -153,6 +153,7 @@ uintptr_t   test_addr[MAX_CPUS];
+ static void run_at(uintptr_t addr, int my_cpu)
+ {
+     uintptr_t *new_start_addr = (uintptr_t *)(addr + startup - _start);
++    void (*fn)(void) = (void (*)())new_start_addr;
+ 
+     if (my_cpu == 0) {
+         // Copy the program code and all data except the stacks.
+@@ -171,7 +172,7 @@ static void run_at(uintptr_t addr, int my_cpu)
+     __asm__ __volatile__("movl %0, %%edi" : : "r" (new_start_addr));
+ #endif
+ 
+-    goto *new_start_addr;
++    fn();
+ }
+ 
+ static bool set_load_addr(uintptr_t *load_addr, size_t program_size, uintptr_t lower_limit, uintptr_t upper_limit)
+-- 
+2.47.2
+

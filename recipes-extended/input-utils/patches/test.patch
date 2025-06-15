@@ -1,0 +1,13 @@
+diff --git a/name.sh b/name.sh
+index f75e2af..785827e 100755
+--- a/name.sh
++++ b/name.sh
+@@ -4,6 +4,8 @@ TYPE="$1"
+ if test -f "/usr/include/linux/input-event-codes.h" -a "$TYPE" != "BUS"; then
+ 	INPUT="/usr/include/linux/input-event-codes.h"
+ else
++	find /usr/include -name input-event-codes.h
++	exit 1
+ 	INPUT="/usr/include/linux/input.h"
+ fi
+ 

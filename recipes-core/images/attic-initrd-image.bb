@@ -8,7 +8,7 @@ IMAGE_FSTYPES = "${INITRAMFS_FSTYPES}"
 COMPATIBLE_HOST = '(x86_64.*)-(linux.*)'
 
 PACKAGE_EXCLUDE = "kernel-image-*"
-PACKAGE_INSTALL = "busybox-initrd"
+PACKAGE_INSTALL = "busybox-initrd os-release-initrd"
 
 PACKAGE_INSTALL_ATTEMPTONLY:append = " \
 	kernel-module-ahci \

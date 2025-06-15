@@ -1,0 +1,32 @@
+From bdbe89e6c2da3efd285e35430e47712a71c8141d Mon Sep 17 00:00:00 2001
+Message-ID: <bdbe89e6c2da3efd285e35430e47712a71c8141d.1750031643.git.calvin@wbinvd.org>
+In-Reply-To: <a5e50893a2c208d4c56cd3d4df39acfac47a8a28.1750031643.git.calvin@wbinvd.org>
+References: <a5e50893a2c208d4c56cd3d4df39acfac47a8a28.1750031643.git.calvin@wbinvd.org>
+From: Calvin Owens <calvin@wbinvd.org>
+Date: Sat, 14 Jun 2025 23:53:04 -0700
+Subject: [PATCH 8/8] Explicitly include .rela.dyn
+
+For some reason, lld discards this section where the GNU linker doesn't,
+which results in booting to a black screen. Fix by making it explicit.
+
+Upstream-Status: Submitted [https://github.com/memtest86plus/memtest86plus/pull/521]
+Signed-off-by: Calvin Owens <calvin@wbinvd.org>
+---
+ build/x86_64/ldscripts/memtest_shared.lds | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/build/x86_64/ldscripts/memtest_shared.lds b/build/x86_64/ldscripts/memtest_shared.lds
+index 30cf26a..b137d3e 100644
+--- a/build/x86_64/ldscripts/memtest_shared.lds
++++ b/build/x86_64/ldscripts/memtest_shared.lds
+@@ -32,6 +32,7 @@ SECTIONS {
+ 		*(.got)
+ 		_edata = . ;
+ 	}
++	.rela.dyn     : { *(.rela.dyn    .rela.dyn.*) }
+ 
+ 	. = ALIGN(4);
+ 	.data : {
+-- 
+2.47.2
+

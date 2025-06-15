@@ -1,0 +1,56 @@
+From 7496a40960435d9d2f9eebc7ca2663343ad2c3f3 Mon Sep 17 00:00:00 2001
+Message-ID: <7496a40960435d9d2f9eebc7ca2663343ad2c3f3.1750031643.git.calvin@wbinvd.org>
+In-Reply-To: <a5e50893a2c208d4c56cd3d4df39acfac47a8a28.1750031643.git.calvin@wbinvd.org>
+References: <a5e50893a2c208d4c56cd3d4df39acfac47a8a28.1750031643.git.calvin@wbinvd.org>
+From: Calvin Owens <calvin@wbinvd.org>
+Date: Sat, 14 Jun 2025 23:52:47 -0700
+Subject: [PATCH 3/8] Force memcpy() and memset() to be defined for llvm
+
+llvm emits code which calls memcpy() and memset(), rather than inlining
+__builtin_memcpy() and __builtin_memset() as GCC does.
+
+Upstream-Status: Submitted [https://github.com/memtest86plus/memtest86plus/pull/521]
+Signed-off-by: Calvin Owens <calvin@wbinvd.org>
+---
+ lib/string.c | 2 +-
+ lib/string.h | 4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/lib/string.c b/lib/string.c
+index 2fbfcac..ce34bca 100644
+--- a/lib/string.c
++++ b/lib/string.c
+@@ -53,7 +53,7 @@ void *memmove(void *dest, const void *src, size_t n)
+     return dest;
+ }
+ 
+-#if (defined(DEBUG_GDB) || defined(__loongarch_lp64))
++#if (defined(DEBUG_GDB) || defined(__loongarch_lp64) || defined(__llvm__))
+ 
+ void *memcpy (void *dest, const void *src, size_t len)
+ {
+diff --git a/lib/string.h b/lib/string.h
+index 97cb2e1..111526d 100644
+--- a/lib/string.h
++++ b/lib/string.h
+@@ -36,7 +36,7 @@ static inline int memcmp(const void *s1, const void *s2, size_t n)
+  * not overlap.
+  * void *memcpy(void *dst, const void *src, size_t n);
+  */
+-#if !(defined(DEBUG_GDB) || defined(__loongarch_lp64))
++#if !(defined(DEBUG_GDB) || defined(__loongarch_lp64) || defined(__llvm__))
+     #define memcpy(d, s, n) __builtin_memcpy((d), (s), (n))
+ #else
+     void *memcpy (void *dest, const void *src, size_t len);
+@@ -54,7 +54,7 @@ void *memmove(void *dest, const void *src, size_t n);
+  * value c.
+  * void *memset(void *s, int c, size_t n);
+  */
+-#if !(defined(DEBUG_GDB) || defined(__loongarch_lp64))
++#if !(defined(DEBUG_GDB) || defined(__loongarch_lp64) || defined(__llvm__))
+     #define memset(s, c, n) __builtin_memset((s), (c), (n))
+ #else
+     void *memset (void *dest, int val, size_t len);
+-- 
+2.47.2
+

@@ -23,5 +23,15 @@ NOERROR_QA = "buildpaths patch-status"
 ERROR_QA:remove := "${NOERROR_QA}"
 WARN_QA:append := " ${NOERROR_QA}"
 
+# See linux-upstream-headers.bb
+BBMASK:append = " linux-libc-headers"
+
+PREFERRED_PROVIDER_llvm = "clang"
+PREFERRED_PROVIDER_llvm-native = "clang-native"
+PREFERRED_PROVIDER_nativesdk-llvm = "nativesdk-clang"
+PROVIDES:pn-clang = "llvm"
+PROVIDES:pn-clang-native = "llvm-native"
+PROVIDES:pn-nativesdk-clang = "nativesdk-llvm"
+
 # FIXME: Force the user to acknowledge this somehow...
-LICENSE_FLAGS_ACCEPTED:append = " commercial"
+LICENSE_FLAGS_ACCEPTED:append = " commercial_ffmpeg"

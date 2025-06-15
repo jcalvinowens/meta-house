@@ -1,0 +1,55 @@
+From 7e9683e043f10f551aa01d6323490a46a71eeb40 Mon Sep 17 00:00:00 2001
+Message-ID: <7e9683e043f10f551aa01d6323490a46a71eeb40.1750031643.git.calvin@wbinvd.org>
+In-Reply-To: <a5e50893a2c208d4c56cd3d4df39acfac47a8a28.1750031643.git.calvin@wbinvd.org>
+References: <a5e50893a2c208d4c56cd3d4df39acfac47a8a28.1750031643.git.calvin@wbinvd.org>
+From: Calvin Owens <calvin@wbinvd.org>
+Date: Sat, 14 Jun 2025 23:53:01 -0700
+Subject: [PATCH 7/8] Make GOTs contiguous
+
+lld barfs if the relro sections aren't contiguous:
+
+    ld: error: section: .got is not contiguous with other relro sections
+
+The section order doesn't really matter, so reordering them to appease
+lld seems like the simplest fix.
+
+Upstream-Status: Submitted [https://github.com/memtest86plus/memtest86plus/pull/521]
+Signed-off-by: Calvin Owens <calvin@wbinvd.org>
+---
+ build/x86_64/ldscripts/memtest_shared.lds | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/build/x86_64/ldscripts/memtest_shared.lds b/build/x86_64/ldscripts/memtest_shared.lds
+index 37c8f71..30cf26a 100644
+--- a/build/x86_64/ldscripts/memtest_shared.lds
++++ b/build/x86_64/ldscripts/memtest_shared.lds
+@@ -25,8 +25,13 @@ SECTIONS {
+ 	.rela.text    : { *(.rela.text   .rela.text.*) }
+ 	.rela.rodata  : { *(.rela.rodata .rela.rodata.*) }
+ 	.rela.data    : { *(.rela.data   .rela.data.*) }
+-	.rela.got     : { *(.rela.got    .rela.got.*) }
+ 	.rela.plt     : { *(.rela.plt    .rela.plt.*) }
++	.rela.got     : { *(.rela.got    .rela.got.*) }
++	.got : {
++		*(.got.plt)
++		*(.got)
++		_edata = . ;
++	}
+ 
+ 	. = ALIGN(4);
+ 	.data : {
+@@ -34,11 +39,6 @@ SECTIONS {
+ 		*(.data)
+ 		*(.data.*)
+ 	}
+-	.got : {
+-		*(.got.plt)
+-		*(.got)
+-		_edata = . ;
+-	}
+ 	. = ALIGN(4);
+ 	.bss : {
+ 		_bss = .;
+-- 
+2.47.2
+

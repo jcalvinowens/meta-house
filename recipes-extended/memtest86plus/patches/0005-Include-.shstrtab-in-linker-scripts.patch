@@ -1,0 +1,48 @@
+From 7bf8d155397d0426e37e6c56b83ee1f3f2eef7af Mon Sep 17 00:00:00 2001
+Message-ID: <7bf8d155397d0426e37e6c56b83ee1f3f2eef7af.1750031643.git.calvin@wbinvd.org>
+In-Reply-To: <a5e50893a2c208d4c56cd3d4df39acfac47a8a28.1750031643.git.calvin@wbinvd.org>
+References: <a5e50893a2c208d4c56cd3d4df39acfac47a8a28.1750031643.git.calvin@wbinvd.org>
+From: Calvin Owens <calvin@wbinvd.org>
+Date: Sat, 14 Jun 2025 23:52:55 -0700
+Subject: [PATCH 5/8] Include .shstrtab in linker scripts
+
+lld barfs if you don't include .shstrtab:
+
+    ld.lld: error: discarding .shstrtab section is not allowed
+
+This change doesn't affect the final binary at all.
+
+Upstream-Status: Submitted [https://github.com/memtest86plus/memtest86plus/pull/521]
+Signed-off-by: Calvin Owens <calvin@wbinvd.org>
+---
+ build/x86_64/ldscripts/memtest_efi.lds    | 1 +
+ build/x86_64/ldscripts/memtest_shared.lds | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/build/x86_64/ldscripts/memtest_efi.lds b/build/x86_64/ldscripts/memtest_efi.lds
+index 61a239a..a24c5bf 100644
+--- a/build/x86_64/ldscripts/memtest_efi.lds
++++ b/build/x86_64/ldscripts/memtest_efi.lds
+@@ -32,6 +32,7 @@ SECTIONS {
+ 		. = ALIGN(512);
+ 		_file_sbat_end = . ;
+ 	}
++	.shstrtab : { *(.shstrtab) }
+ 	/DISCARD/ : { *(*) }
+ 
+ 	_real_text_size  = _real_text_end  - _file_text_start;
+diff --git a/build/x86_64/ldscripts/memtest_shared.lds b/build/x86_64/ldscripts/memtest_shared.lds
+index ef82e65..37c8f71 100644
+--- a/build/x86_64/ldscripts/memtest_shared.lds
++++ b/build/x86_64/ldscripts/memtest_shared.lds
+@@ -20,6 +20,7 @@ SECTIONS {
+ 	.hash       : { *(.hash) }
+ 	.gnu.hash   : { *(.gnu.hash) }
+ 	.dynamic    : { *(.dynamic) }
++	.shstrtab   : { *(.shstrtab) }
+ 
+ 	.rela.text    : { *(.rela.text   .rela.text.*) }
+ 	.rela.rodata  : { *(.rela.rodata .rela.rodata.*) }
+-- 
+2.47.2
+
