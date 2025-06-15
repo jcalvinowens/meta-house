@@ -1,0 +1,42 @@
+From 13e16e5be25f379211c7329fa1462464174c0f2d Mon Sep 17 00:00:00 2001
+Message-ID: <13e16e5be25f379211c7329fa1462464174c0f2d.1748481141.git.calvin@wbinvd.org>
+From: Bruce Ashfield <bruce.ashfield@gmail.com>
+Date: Wed, 6 Nov 2024 21:29:17 -0500
+Subject: [PATCH] kernel-devsrc: make tools/Build optional
+
+kernel-devsrc fails to copy files for v6.12+ as the
+following upstream commit has removed the file tools/build/Build:
+
+   commit ea974028a049f2cea4bb6be963ee3e3844a03f6d
+   Author: Brian Norris <briannorris@chromium.org>
+   Date:   Mon Jul 15 13:32:43 2024 -0700
+
+       tools build: Avoid circular .fixdep-in.o.cmd issues
+
+We make the failed copy of this file non-fatal to support
+all kernel versions.
+
+Signed-off-by: Bruce Ashfield <bruce.ashfield@gmail.com>
+Signed-off-by: Richard Purdie <richard.purdie@linuxfoundation.org>
+Upstream-Status: Backport [2025-04-walnascar]
+Signed-off-by: Calvin Owens <calvin@wbinvd.org>
+---
+ meta/recipes-kernel/linux/kernel-devsrc.bb | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/meta/recipes-kernel/linux/kernel-devsrc.bb b/meta/recipes-kernel/linux/kernel-devsrc.bb
+index 7724967151..1500aff2e2 100644
+--- a/meta/recipes-kernel/linux/kernel-devsrc.bb
++++ b/meta/recipes-kernel/linux/kernel-devsrc.bb
+@@ -156,7 +156,7 @@ do_install() {
+             # these are a few files associated with objtool, since we'll need to
+             # rebuild it
+             cp -a --parents tools/build/Build.include $kerneldir/build/
+-            cp -a --parents tools/build/Build $kerneldir/build/
++            cp -a --parents tools/build/Build $kerneldir/build/ 2>/dev/null || :
+             cp -a --parents tools/build/fixdep.c $kerneldir/build/
+             cp -a --parents tools/scripts/utilities.mak $kerneldir/build/
+ 
+-- 
+2.47.2
+

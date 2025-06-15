@@ -1,0 +1,190 @@
+From ad88ffbf024e76e567ab3e02c96beac3eb620a97 Mon Sep 17 00:00:00 2001
+Message-ID: <ad88ffbf024e76e567ab3e02c96beac3eb620a97.1749762472.git.calvin@wbinvd.org>
+From: Calvin Owens <calvin@wbinvd.org>
+Date: Thu, 12 Jun 2025 13:59:52 -0700
+Subject: [PATCH] Trivial fixes to support yocto and musl
+
+Upstream-Status: Inappropriate [oe-specific]
+Signed-off-by: Calvin Owens <calvin@wbinvd.org>
+---
+ LICENSE               | 18 ++++++++++++++++++
+ Makefile              | 15 +++++++++++++++
+ gwnum/make64          | 20 +++++++++-----------
+ linux64/makefile      | 41 ++++++++++-------------------------------
+ linux64/os_routines.c |  2 +-
+ 5 files changed, 53 insertions(+), 43 deletions(-)
+ create mode 100644 LICENSE
+ create mode 100644 Makefile
+
+diff --git a/LICENSE b/LICENSE
+new file mode 100644
+index 0000000..771498d
+--- /dev/null
++++ b/LICENSE
+@@ -0,0 +1,18 @@
++https://www.mersenne.org/legal/
++
++This EULA applies to all versions of GIMPS Prime95 and MPrime software
++and source code ("Software").
++
++Software is free to download and use indefinitely on any computer(s) you
++own or for which you have permission and authority to install and run
++Software. Software is not export-restricted.
++
++To use the Software you agree to be bound by this EULA and the Terms and
++Conditions of Use. GIMPS reserves the right to change this EULA without
++notice and with reasonable retroactive effect. Last updated 2008-10-15.
++
++GIMPS not responsible for any damages or losses arising from use of
++Software. SOFTWARE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY
++OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
++THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
++PARTICULAR PURPOSE.
+diff --git a/Makefile b/Makefile
+new file mode 100644
+index 0000000..b3dabf0
+--- /dev/null
++++ b/Makefile
+@@ -0,0 +1,15 @@
++all: mprime
++
++mprime: linux64/mprime
++	cp linux64/mprime .
++
++gwnum/gwnum.a:
++	make -C gwnum/ -f make64
++
++linux64/mprime: gwnum/gwnum.a
++	make -C linux64/ -f makefile
++
++clean:
++	make -C gwnum/ -f make64 clean
++	make -C linux64/ -f makefile clean
++	rm -f mprime
+diff --git a/gwnum/make64 b/gwnum/make64
+index 19119bb..f98e96b 100644
+--- a/gwnum/make64
++++ b/gwnum/make64
+@@ -1,16 +1,14 @@
+-# Makefile for Linux and FreeBSD (pre 10.0) 64-bit gwnum library
+-# Requires gcc 8 for avx512 support:
+-#	scl enable devtoolset-8 bash
++#
++# XXX: Modified for compatibility with Yocto
++#
+ 
+-CC = gcc
+-CFLAGS = -I.. -I../sqlite-amalgamation-3420000 -I/usr/local/include -std=gnu99 -DX86_64 -Wno-unused-result -O2
+-#CFLAGS = -g -I.. -I../sqlite-amalgamation-3420000 -I/usr/local/include -std=gnu99 -DX86_64 -DGDEBUG -Wno-unused-result -O2
++CC ?= cc
++CFLAGS += -O2 -I.. -I../sqlite-amalgamation-3420000 -std=gnu99 -DX86_64 -Wno-unused-result
+ 
+-CPP = g++
+-CPPFLAGS = -I.. -I../qd -std=c++11 -DX86_64 -O2
+-#CPPFLAGS = -g -I.. -I../qd -std=c++11 -DX86_64 -DGDEBUG -O2
++CXX ?= c++
++CXXFLAGS += -O2 -I.. -I../qd -std=c++11 -DX86_64
+ 
+-AR = ar
++AR ?= ar
+ 
+ LINUXOBJS = cpuid.o gwnum.o gwtables.o gwthread.o gwini.o gwbench.o gwutil.o gwdbldbl.o giants.o radix.o ecmstag1.o
+ POLYOBJS = polymult.o polymult_sse2.o polymult_avx.o polymult_fma.o polymult_avx512.o 
+@@ -51,4 +49,4 @@ polymult_avx512.o: polymult.c polymult.h
+ 	$(CC) $(CFLAGS) -c $<
+ 
+ .cpp.o:
+-	$(CPP) $(CPPFLAGS) -c $<
++	$(CXX) $(CXXFLAGS) -c $<
+diff --git a/linux64/makefile b/linux64/makefile
+index 61d130e..164e45e 100644
+--- a/linux64/makefile
++++ b/linux64/makefile
+@@ -1,42 +1,21 @@
+-# Makefile for Linux 64-bit mprime
+ #
+-# NOTES: libcurl built by downloading latest sources and:
+-#	./configure --without-ssl --without-libssh2 --without-libidn --disable-ldap --disable-ldaps --without-gssapi --enable-ipv6 --without-krb4
+-#	make
+-#	make install
++# XXX: Modified for compatibility with Yocto
+ #
+-# Hwloc can be downloaded from https://www.open-mpi.org/projects/hwloc/
+-# Configure hwloc with --enable-static --disable-shared --disable-io
+-#              or with --enable-static --disable-shared --disable-pci --disable-cuda --disable-gl --disable-opencl --disable-rsmi --disable-nvml
+-#
+-#  Ugh, different linux variants require different makefiles.
+-#  The current makefile is for CentOS 7.  We prefer to link against older Linux versions because linking on the latest, greatest version
+-#  creates an mprime executable that will not run on older Linux versions because of glibc incompatibilites.
+-#
+-#  Some linux versions require some of the variations below:
+-#	"export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig"
+-#	CFLAGS = -I.. -I../gwnum -DX86_64 -O2 -Wno-unused-result
+-#	LFLAGS = -Wl,-M
+-#	LIBS = ../gwnum/gwnum.a -lm -lpthread -Wl,-Bstatic $(shell pkg-config --static --libs libhwloc) -Wl,-Bstatic $(shell pkg-config --static --libs libcurl) -lstdc++ -Wl,-Bdynamic -ldl
+ 
+-CC = gcc
+-CFLAGS = -I.. -I../gwnum -I/usr/local/include -std=gnu99 -DX86_64 -Wno-unused-result -O2 -DPORT=8
++CC ?= cc
++CFLAGS += -O2 -I.. -I../gwnum -std=gnu99 -DX86_64 -Wno-unused-result -DPORT=8
+ 
+-CPP = g++
+-CPPFLAGS = -I.. -I../gwnum -I../../boost_1_76_0 -DX86_64 -std=c++11 -O2 -DPORT=8
++CXX ?= c++
++CXXFLAGS += -O2 -I.. -I../gwnum -I../../boost_1_76_0 -DX86_64 -std=c++11 -DPORT=8
+ 
+-LFLAGS = -Wl,-M -Wl,-L/usr/local/lib
+-#LIBS = ../gwnum/gwnum.a ../gwnum/polymult.a -lm -lpthread -Wl,-Bstatic -lhwloc -Wl,-Bstatic -lcurl -Wl,-Bdynamic -lrt -lstdc++ -lz -lxml2 -ldl -lgmp
+-LIBS = ../gwnum/gwnum.a ../gwnum/polymult.a -lm -lpthread -Wl,-Bstatic -lhwloc -Wl,-Bstatic -lcurl -Wl,-Bdynamic -lrt -lstdc++ -ldl -lgmp
++LIBS = ../gwnum/gwnum.a ../gwnum/polymult.a -lm -lpthread -lhwloc -lcurl -lrt -lstdc++ -ldl -lgmp
+ 
+ FACTOROBJ = factor64.o
+ LINUXOBJS = prime.o menu.o cJSON.o ecm.o exponentiate.o pair.o pm1prob.o
+ EXE      = mprime
+ 
+-#########################################################################
+-
+ $(EXE): security $(LINUXOBJS) $(FACTOROBJ)
+-	$(CC) $(LFLAGS) -o $(EXE) $(LINUXOBJS) $(FACTOROBJ) $(LIBS)
++	$(CC) $(LDFLAGS) -o $(EXE) $(LINUXOBJS) $(FACTOROBJ) $(LIBS)
+ 
+ security:
+ 	[ ! -e ../security.h ] && touch ../security.h || true
+@@ -50,13 +29,13 @@ cJSON.o:
+ 	$(CC) $(CFLAGS) -c ../cJSON.c
+ 
+ ecm.o:
+-	$(CPP) $(CPPFLAGS) -c ../ecm.cpp
++	$(CXX) $(CXXFLAGS) -c ../ecm.cpp
+ 
+ exponentiate.o:
+ 	$(CC) $(CFLAGS) -c ../exponentiate.c
+ 
+ pair.o:
+-	$(CPP) $(CPPFLAGS) -c ../pair.cpp
++	$(CXX) $(CXXFLAGS) -c ../pair.cpp
+ 
+ pm1prob.o:
+ 	$(CC) $(CFLAGS) -c ../pm1prob.c
+@@ -65,4 +44,4 @@ pm1prob.o:
+ 	$(CC) $(CFLAGS) -c $<
+ 
+ .cpp.o:
+-	$(CPP) $(CPPFLAGS) -c $<
++	$(CXX) $(CXXFLAGS) -c $<
+diff --git a/linux64/os_routines.c b/linux64/os_routines.c
+index c2f8bde..82fcb93 100644
+--- a/linux64/os_routines.c
++++ b/linux64/os_routines.c
+@@ -502,7 +502,7 @@ char getDirectorySeparator ()
+ /* Tell malloc to free memory back to the OS */
+ 
+ void mallocFreeForOS () {
+-#ifdef __linux__
++#if 0
+ 	malloc_trim (0);
+ #endif
+ }
+-- 
+2.47.2
+

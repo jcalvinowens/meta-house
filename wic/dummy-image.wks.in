@@ -1,0 +1,2 @@
+part /boot --source bootimg-efi --sourceparams="loader=${EFI_PROVIDER}" --active --align 1024 --label boot --no-fstab-update
+bootloader --ptable gpt --configfile="${IMAGE_ROOTFS}/boot/EFI/BOOT/grub.cfg"

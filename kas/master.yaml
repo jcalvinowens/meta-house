@@ -1,0 +1,20 @@
+header:
+  version: 17
+  includes:
+    - kas/base.yaml
+
+machine: universal-pc-v3
+distro: nodistro
+target:
+  - mc:house:desktop-workstation-image
+  - mc:house:desktop-image
+  - mc:house:workstation-image
+  - mc:house:minimal-image
+  - mc:garage:workstation-image
+  - mc:garage:minimal-image
+  - mc:attic:minimal-image
+  - mc:basement:dummy-image
+
+defaults:
+  repos:
+    branch: master

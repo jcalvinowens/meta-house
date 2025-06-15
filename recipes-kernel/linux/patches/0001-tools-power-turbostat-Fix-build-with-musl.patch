@@ -1,0 +1,37 @@
+From 7edd4c688111a697cfe913c73d074738b3d1dffb Mon Sep 17 00:00:00 2001
+Message-ID: <7edd4c688111a697cfe913c73d074738b3d1dffb.1749833735.git.calvin@wbinvd.org>
+From: Calvin Owens <calvin@wbinvd.org>
+Date: Fri, 13 Jun 2025 09:45:38 -0700
+Subject: [PATCH] tools/power turbostat: Fix build with musl
+
+    turbostat.c: In function 'parse_int_file':
+    turbostat.c:5567:19: error: 'PATH_MAX' undeclared (first use in this function)
+     5567 |         char path[PATH_MAX];
+          |                   ^~~~~~~~
+
+    turbostat.c: In function 'probe_graphics':
+    turbostat.c:6787:19: error: 'PATH_MAX' undeclared (first use in this function)
+     6787 |         char path[PATH_MAX];
+          |                   ^~~~~~~~
+
+Upstream-Status: Submitted [https://lore.kernel.org/lkml/7edd4c688111a697cfe913c73d074738b3d1dffb.1749833196.git.calvin@wbinvd.org/T/#u]
+Signed-off-by: Calvin Owens <calvin@wbinvd.org>
+---
+ tools/power/x86/turbostat/turbostat.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
+index 0170d3cc6819..925556b90770 100644
+--- a/tools/power/x86/turbostat/turbostat.c
++++ b/tools/power/x86/turbostat/turbostat.c
+@@ -67,6 +67,7 @@
+ #include <stdbool.h>
+ #include <assert.h>
+ #include <linux/kernel.h>
++#include <limits.h>
+ 
+ #define UNUSED(x) (void)(x)
+ 
+-- 
+2.47.2
+

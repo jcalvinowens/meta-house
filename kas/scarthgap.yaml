@@ -1,0 +1,35 @@
+header:
+  version: 17
+  includes:
+    - kas/base.yaml
+
+machine: universal-pc-v3
+distro: nodistro
+target:
+  - mc:garage:workstation-image
+  - mc:garage:minimal-image
+  - mc:attic:minimal-image
+
+defaults:
+  repos:
+    branch: scarthgap
+
+repos:
+  bitbake:
+    branch: "2.8"
+
+  lts-mixins:
+    url: https://git.yoctoproject.org/meta-lts-mixins
+    branch: scarthgap/rust
+    layers:
+      .:
+
+  openembedded-core:
+    patches:
+      0001-kernel-devsrc-make-tools-Build-optional:
+        path: kas/patches/0001-kernel-devsrc-make-tools-Build-optional.patch
+        repo: meta-house
+
+local_conf_header:
+  bbmask: |
+    BBMASK += "turbostat"

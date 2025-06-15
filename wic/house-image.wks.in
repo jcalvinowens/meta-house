@@ -1,0 +1,3 @@
+part /boot --source bootimg-efi --sourceparams="loader=${EFI_PROVIDER}" --active --align 1024 --label boot --no-fstab-update
+part / --source rootfs --fstype=ext4 --align 1024 --label root --no-fstab-update
+bootloader --ptable gpt --timeout=5 --append="root=LABEL=root rootfstype=ext4 console=tty0"

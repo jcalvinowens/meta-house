@@ -1,0 +1,32 @@
+From 3f6611e147520caaa84cae8f88e3cb2fec398574 Mon Sep 17 00:00:00 2001
+Message-ID: <3f6611e147520caaa84cae8f88e3cb2fec398574.1749941155.git.calvin@wbinvd.org>
+From: Calvin Owens <calvin@wbinvd.org>
+Date: Sat, 14 Jun 2025 15:45:48 -0700
+Subject: [PATCH] Make it possible to cross-compile for x86_64 in Yocto
+
+Upstream-Status: Pending
+Signed-off-by: Calvin Owens <calvin@wbinvd.org>
+---
+ build/x86_64/Makefile | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/build/x86_64/Makefile b/build/x86_64/Makefile
+index 1eed8c2..76fe2b0 100644
+--- a/build/x86_64/Makefile
++++ b/build/x86_64/Makefile
+@@ -1,8 +1,8 @@
+-AS = as -64
+-CC = gcc
+-OBJCOPY = objcopy
++AS ?= as -64
++CC ?= cc
++OBJCOPY ?= objcopy
+ 
+-GIT = git
++GIT ?= git
+ 
+ ifeq ($(GIT),none)
+   GIT_AVAILABLE = false
+-- 
+2.47.2
+

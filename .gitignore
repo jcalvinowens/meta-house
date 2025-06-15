@@ -1,0 +1,10 @@
+.kas_shell_history
+
+.gnupg/
+bitbake/
+build/
+meta-browser/
+meta-clang/
+meta-openembedded/
+meta-yocto/
+openembedded-core/

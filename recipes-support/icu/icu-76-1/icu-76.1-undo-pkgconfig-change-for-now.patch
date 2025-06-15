@@ -1,0 +1,29 @@
+https://github.com/chimera-linux/cports/blob/master/main/icu/patches/pc.patch
+https://gitweb.gentoo.org/repo/gentoo.git/commit/?id=5de097998a3ed84e9af43fce547aa143b5e61c14
+
+Per above, the users are wrong, but for now work around it.
+
+Upstream-Status: Inappropriate (see above)
+Signed-off-by: Calvin Owens <calvin@wbinvd.org>
+
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -290,7 +290,7 @@
+ ifeq ($(ENABLE_SHARED),)
+ 	@echo "Requires: icu-uc" >> $@
+ else
+-	@echo "Requires.private: icu-uc" >> $@
++	@echo "Requires: icu-uc" >> $@
+ endif
+ 	@echo "Libs:" '-L$${libdir}' "${ICULIBS_I18N}" >> $@
+ 	@echo $@ updated.
+@@ -302,7 +302,7 @@
+ ifeq ($(ENABLE_SHARED),)
+ 	@echo "Requires: icu-i18n" >> $@
+ else
+-	@echo "Requires.private: icu-i18n" >> $@
++	@echo "Requires: icu-i18n" >> $@
+ endif
+ 	@echo "Libs:" '-L$${libdir}' "${ICULIBS_IO}" >> $@
+ 	@echo $@ updated.
+
